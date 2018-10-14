@@ -9,7 +9,6 @@
 import UIKit
 
 class LoginViewController: UIViewController {
-
     
     @IBOutlet weak var fullName: UITextField!
     @IBOutlet weak var phoneNumber: UITextField!
@@ -17,9 +16,15 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var emergencyContact: UITextField!
     
     @IBAction func `continue`(_ sender: UIButton) {
-        performSegue(withIdentifier: "continueSegue", sender: sender)
+
+        
+        performSegue(withIdentifier: "continueSegue", sender: fullName.text)
     }
-    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let segue = segue.destination as! ViewController
+        segue.user_logged_in = fullName.text
+        print(segue.user_logged_in)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()

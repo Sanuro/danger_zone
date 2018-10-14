@@ -213,6 +213,14 @@
                                     <outletCollection property="gestureRecognizers" destination="Ebj-5c-r1t" appends="YES" id="gZV-gC-xfr"/>
                                 </connections>
                             </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Xn-Ql-pSt">
+                                <rect key="frame" x="259" y="26" width="58" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Refresh!"/>
+                                <connections>
+                                    <action selector="refreshButtonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="vlV-Jc-z2z"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>

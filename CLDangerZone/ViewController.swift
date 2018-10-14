@@ -39,8 +39,8 @@ class ViewController: UIViewController, MKMapViewDelegate, MFMessageComposeViewC
     var address_to_save: String?
     var annotation_to_save: MKPointAnnotation?
     var date_to_save: String?
-    
-    
+    var user_logged_in: String?
+
     
     
     func messageComposeViewController(_ controller: MFMessageComposeViewController, didFinishWith result: MessageComposeResult) {
@@ -143,7 +143,8 @@ class ViewController: UIViewController, MKMapViewDelegate, MFMessageComposeViewC
             } else if let placemarks = clPlacemarks, placemarks.count > 0{
                 let placemark = placemarks[0]
                 whole_address = "\(placemark.postalAddress!.street), \(placemark.postalAddress!.city), \(placemark.postalAddress!.state),  \(placemark.postalAddress!.postalCode), \(placemark.postalAddress!.country)"
-                var potential_message = "Hello. I am Katie. I am in danger at " + whole_address
+                let user_displayed = self.user_logged_in!
+                var potential_message = "Hello. I am " + user_displayed + ". I am in danger at " + whole_address
                 potential_message = potential_message.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? ""
                 
                 var encoded_potential_msg_url = "https://danger-klee123.structure.sh/msg/" + potential_message
@@ -225,6 +226,11 @@ class ViewController: UIViewController, MKMapViewDelegate, MFMessageComposeViewC
         
     }
     
+    @IBAction func refreshButtonPressed(_ sender: UIButton) {
+        update_annotations()
+    }
+    
+    
     func captureScreenshot(){
         let layer = UIApplication.shared.keyWindow!.layer
         let scale = UIScreen.main.scale
@@ -250,6 +256,7 @@ class ViewController: UIViewController, MKMapViewDelegate, MFMessageComposeViewC
         new_categoryView.isHidden = true
         category_chosen = "Theft"
         enableBasicLocationServices()
+        
 
         let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(addAnnotationOnLongPress(gesture:)))
         longPressGesture.minimumPressDuration = 0.1
@@ -266,6 +273,7 @@ class ViewController: UIViewController, MKMapViewDelegate, MFMessageComposeViewC
 //        pickerview is category
         category.dataSource = self
         category.delegate = self
+//        update_annotations()
 
     }
     
@@ -326,6 +334,7 @@ class ViewController: UIViewController, MKMapViewDelegate, MFMessageComposeViewC
             //Now use this coordinate to add annotation on map.
             var annotation = MKPointAnnotation()
             annotation.coordinate = coordinate
+            coordinate_to_save = coordinate
             //Set title and subtitle if you want
             
             let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
@@ -429,6 +438,97 @@ class ViewController: UIViewController, MKMapViewDelegate, MFMessageComposeViewC
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         category_chosen = category_option[row]
+    }
+    
+    func update_annotations() {
+        let allAnotations = self.mapView.annotations
+        self.mapView.removeAnnotations(allAnotations)
+        
+        
+        
+        let client = Stitch.defaultAppClient!
+        
+        client.auth.login(withCredential: AnonymousCredential()) { result in
+            switch result {
+            case .success(let user):
+                print("logged in anonymous as user \(user.id)")
+                DispatchQueue.main.async {
+                    // update UI accordingly
+                }
+            case .failure(let error):
+                print("Failed to log in: \(error)")
+            }
+        }
+        var result_str: [[String]]?
+        
+        var collection = mongoClient?.db("all_locations").collection("pin_info");
+        
+        collection?.find().asArray { result in
+            var documents: [Document]
+            switch result {
+            case .success(let d):
+                documents = d
+                for document in documents {
+                    print("inside function")
+                    let latitude: CLLocationDegrees = document["lat"] as! CLLocationDegrees
+                    let longitude: CLLocationDegrees = document["lon"] as! CLLocationDegrees
+                    let coordinate = CLLocationCoordinate2DMake(latitude, longitude)
+
+                    var annotation = MKPointAnnotation()
+                    annotation.coordinate = coordinate
+                    self.mapView.addAnnotation(annotation)
+                    
+                }
+            case .failure(let error):
+                let error_result = error
+            }
+            // Do something with the returned documents
+        }
+        
+        
+        
+//        let coordinate = locationManager.location?.coordinate
+//
+//        var annotation = MKPointAnnotation()
+//        annotation.coordinate = coordinate
+//        coordinate_to_save = coordinate
+        //Set title and subtitle if you want
+        
+//        let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+//        let geocoder = CLGeocoder()
+//        geocoder.reverseGeocodeLocation(location) {(clPlacemarks, error) in
+//            if error != nil{
+//                print(error?.localizedDescription)
+//            } else if let placemarks = clPlacemarks, placemarks.count > 0{
+//                let date = Date()
+//                let formatter = DateFormatter()
+//                formatter.dateFormat = "MM.dd.yyyy"
+//                let result_date = formatter.string(from: date)
+//                let placemark = placemarks[0]
+//                annotation.subtitle = "\(placemark.postalAddress!.street), \(placemark.postalAddress!.city), \(placemark.postalAddress!.state),  \(placemark.postalAddress!.postalCode), \(placemark.postalAddress!.country)\n\(result_date)"
+//                self.date_to_save = result_date
+//                self.new_categoryView.isHidden = false
+//                self.address_to_save = annotation.subtitle
+//                self.annotation_to_save = annotation
+//            }
+//        }
+//
+        
+        
+        
+        
+        
+        
+        //            annotation.subtitle = "Latitude: \(coordinate.latitude) Longitude: \(coordinate.longitude)"
+        //            if (save_data) {
+        //                self.mapView.addAnnotation(annotation)
+        //            }
+        
+        
+        
+        
+        
+        
     }
     
     
